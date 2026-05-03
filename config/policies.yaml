@@ -1,0 +1,78 @@
+# Policy rules: map (severity, confidence, defect_type) to a downstream action.
+#
+# Resolution order (most specific wins):
+#   1. fund_id + defect_type
+#   2. fund_id only
+#   3. defect_type only
+#   4. global default
+#
+# Within a tier, the FIRST rule whose conditions match (severity threshold,
+# confidence threshold) is selected. List rules in priority order.
+
+defaults:
+  - rule_id: default_high_confident
+    when:
+      severity_in: [HIGH, CRITICAL]
+      min_confidence: 0.85
+    action: BLOCK_NAV
+    escalate_to: controller
+    notification_channel: "email:nav-oversight@example.com"
+
+  - rule_id: default_high_unsure
+    when:
+      severity_in: [HIGH, CRITICAL]
+      min_confidence: 0.0
+    action: URGENT_REVIEW
+    escalate_to: team_lead
+    notification_channel: "slack:#oversight-urgent"
+
+  - rule_id: default_medium
+    when:
+      severity_in: [MEDIUM]
+      min_confidence: 0.0
+    action: REVIEW_QUEUE
+    escalate_to: null
+    notification_channel: "slack:#oversight-queue"
+
+  - rule_id: default_low
+    when:
+      severity_in: [LOW]
+      min_confidence: 0.0
+    action: LOG_ONLY
+    escalate_to: null
+    notification_channel: null
+
+  - rule_id: default_none
+    when:
+      severity_in: [NONE]
+      min_confidence: 0.0
+    action: AUTO_SIGN_OFF
+    escalate_to: null
+    notification_channel: null
+
+# Per-fund overrides. These run BEFORE the defaults.
+fund_overrides:
+  # COBAL is a hedge fund where modest performance-fee fluctuations are
+  # routine; LOW-severity HWM findings auto-sign-off rather than logging.
+  - rule_id: cobal_perf_fee_lenient
+    fund_id: COBAL
+    defect_type: stale_hwm_perf_fee
+    when:
+      severity_in: [LOW]
+      min_confidence: 0.0
+    action: AUTO_SIGN_OFF
+    escalate_to: null
+    notification_channel: null
+
+  # ATLAS is a high-AUM UCITS retail fund. Any capstock / cutoff anomaly --
+  # even at MEDIUM severity -- must hit the urgent queue because investor
+  # protection rules are strict.
+  - rule_id: atlas_capstock_strict
+    fund_id: ATLAS
+    defect_type: subscription_pre_cutoff
+    when:
+      severity_in: [MEDIUM, HIGH, CRITICAL]
+      min_confidence: 0.0
+    action: URGENT_REVIEW
+    escalate_to: team_lead
+    notification_channel: "slack:#oversight-urgent"
