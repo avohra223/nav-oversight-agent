@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.python-version
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Generated warehouse (rebuildable from `python scripts/generate_data.py`)
+data/*.duckdb
+data/*.duckdb.wal
+
+# Runtime audit artifacts (generated on every tool call)
+audit/tool_calls.jsonl
+audit/*.jsonl
+
+# Test / coverage outputs
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# IDE / editor folders
+.idea/
+.vscode/
+*.swp
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
