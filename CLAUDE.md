@@ -198,9 +198,15 @@ hundred lines without backend/frontend split.
   linter and two end-to-end recon tests (defects 3 and 9) that prove the
   tool layer is sufficient to find defects without leaking ground truth.
 
-- [ ] **Phase 3 — Agent loop.** Anthropic SDK tool-use loop, system prompt,
-  per-defect investigation playbooks, verdict synthesizer, policy
-  application. *In progress next.*
+- [x] **Phase 3 — Agent loop.** Anthropic SDK tool-use loop with prompt
+  caching against `claude-opus-4-7`. 26 tools registered with the agent
+  (Phase 2 tools, with LLM-friendly arg adaptation). System prompt + 10
+  defect category checklist, both versioned via SHA-256 hash recorded
+  with each run. Hybrid reasoning: fixed checklist guarantees coverage,
+  open reasoning within each category. Batch execution; streaming is
+  Phase 4. Replay capability with tolerance-based diff (verdicts and
+  severities must match exactly, confidence within ±0.20, tool overlap
+  Jaccard ≥ 0.50). Policy layer applied after verdicts.
 
 - [ ] **Phase 4 — UI.** Streamlit app: scenarios index → click a fund-day →
   agent streams its reasoning → final verdict + evidence + policy action.
@@ -208,6 +214,30 @@ hundred lines without backend/frontend split.
 - [ ] **Phase 5 — Hardening.** Eval suite that runs the agent against all
   10 defects + the baseline-noise breaks; measures defect detection rate,
   false-positive rate, mean confidence on correct verdicts.
+
+### Phase 3 specifics
+
+- **Model.** `claude-opus-4-7`. The defect checklist is large; Opus's
+  reasoning is the right tool for the job. Cost ~$3-5 per investigation
+  with caching.
+- **Prompt versioning.** `agent/versioning.py:prompt_version()` returns
+  the first 12 hex chars of `sha256(system_prompt + defect_checklist)`.
+  Recorded in every `AgentRun` and used for filtering / regression
+  analysis when prompts change.
+- **Replay tolerance.** Same verdict types and severities (exact match),
+  confidence within ±0.20, tool-name Jaccard ≥ 0.50. Reasoning text may
+  vary freely. Captured in `agent/replay.py:ReplayDiff`.
+- **False-positive policy.** On clean fund-days the agent is allowed to
+  emit LOW-severity verdicts (sub-tolerance noise). HIGH or CRITICAL on
+  a clean day fails the no-FP test in `tests/agent/`. The intent: better
+  to log a curiosity than to scream.
+- **Token budget.** Default 200k tokens per run; if exceeded, the run
+  halts with `halted_reason="token_budget"` and a `agent_did_not_converge`
+  verdict is emitted. Loop also halts on `max_iterations=50`.
+- **API safety.** All Anthropic calls go through `agent/api_wrapper.py`,
+  which retries on 429/5xx with exponential backoff and surfaces token
+  usage to the loop for budget enforcement. No tool ever invokes the
+  Anthropic API directly.
 
 ## 9. Reference
 
