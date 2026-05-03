@@ -39,6 +39,7 @@ coverage.xml
 # IDE / editor folders
 .idea/
 .vscode/
+.claude/
 *.swp
 *~
 
