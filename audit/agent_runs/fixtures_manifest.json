@@ -1,0 +1,127 @@
+{
+  "generated_at": "2026-05-02T14:00:00",
+  "count": 11,
+  "fixtures": [
+    {
+      "run_id": "fixture_20260502T140000_MERID_2026-01-22_def001",
+      "fund_id": "MERID",
+      "as_of_date": "2026-01-22",
+      "share_class": null,
+      "primary_defect_type": "single_stock_shock",
+      "primary_severity": "HIGH",
+      "primary_confidence": 0.93,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_MERID_2026-01-22_def001.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_PACIF_2026-02-25_def002",
+      "fund_id": "PACIF",
+      "as_of_date": "2026-02-25",
+      "share_class": null,
+      "primary_defect_type": "fx_cutoff_mismatch",
+      "primary_severity": "HIGH",
+      "primary_confidence": 0.91,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_PACIF_2026-02-25_def002.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_HELIO_2026-04-02_def003",
+      "fund_id": "HELIO",
+      "as_of_date": "2026-04-02",
+      "share_class": null,
+      "primary_defect_type": "missed_corp_action",
+      "primary_severity": "HIGH",
+      "primary_confidence": 0.94,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_HELIO_2026-04-02_def003.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_NORDIC_2026-02-12_def004",
+      "fund_id": "NORDIC",
+      "as_of_date": "2026-02-12",
+      "share_class": null,
+      "primary_defect_type": "stale_price",
+      "primary_severity": "HIGH",
+      "primary_confidence": 0.89,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_NORDIC_2026-02-12_def004.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_COBAL_2026-04-15_def005",
+      "fund_id": "COBAL",
+      "as_of_date": "2026-04-15",
+      "share_class": "I",
+      "primary_defect_type": "stale_hwm_perf_fee",
+      "primary_severity": "HIGH",
+      "primary_confidence": 0.92,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_COBAL_2026-04-15_def005.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_HELIO_2026-02-04_def006",
+      "fund_id": "HELIO",
+      "as_of_date": "2026-02-04",
+      "share_class": null,
+      "primary_defect_type": "trade_wrong_side",
+      "primary_severity": "MEDIUM",
+      "primary_confidence": 0.88,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_HELIO_2026-02-04_def006.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_STERL_2026-03-24_def007",
+      "fund_id": "STERL",
+      "as_of_date": "2026-03-24",
+      "share_class": null,
+      "primary_defect_type": "missed_coupon_accrual",
+      "primary_severity": "LOW",
+      "primary_confidence": 0.86,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_STERL_2026-03-24_def007.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_ATLAS_2026-03-05_def008",
+      "fund_id": "ATLAS",
+      "as_of_date": "2026-03-05",
+      "share_class": "A",
+      "primary_defect_type": "subscription_pre_cutoff",
+      "primary_severity": "MEDIUM",
+      "primary_confidence": 0.9,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_ATLAS_2026-03-05_def008.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_AURORA_2026-03-12_def009",
+      "fund_id": "AURORA",
+      "as_of_date": "2026-03-12",
+      "share_class": null,
+      "primary_defect_type": "wrong_wht",
+      "primary_severity": "LOW",
+      "primary_confidence": 0.96,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_AURORA_2026-03-12_def009.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_ATLAS_2026-04-23_def010",
+      "fund_id": "ATLAS",
+      "as_of_date": "2026-04-23",
+      "share_class": "I",
+      "primary_defect_type": "class_fee_misallocation",
+      "primary_severity": "LOW",
+      "primary_confidence": 0.83,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_ATLAS_2026-04-23_def010.json"
+    },
+    {
+      "run_id": "fixture_20260502T140000_STERL_2026-02-19_clean001",
+      "fund_id": "STERL",
+      "as_of_date": "2026-02-19",
+      "share_class": "I",
+      "primary_defect_type": "no_defect",
+      "primary_severity": "NONE",
+      "primary_confidence": 0.91,
+      "is_fixture": true,
+      "file": "fixture_20260502T140000_STERL_2026-02-19_clean001.json"
+    }
+  ]
+}

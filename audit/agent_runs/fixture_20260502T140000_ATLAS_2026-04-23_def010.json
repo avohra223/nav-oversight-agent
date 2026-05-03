@@ -1,0 +1,308 @@
+{
+  "run_id": "fixture_20260502T140000_ATLAS_2026-04-23_def010",
+  "fund_id": "ATLAS",
+  "as_of_date": "2026-04-23",
+  "share_class": "I",
+  "model_version": "claude-opus-4-7",
+  "prompt_version": "2b800702d652",
+  "verdicts": [
+    {
+      "defect_type": "class_fee_misallocation",
+      "severity": "LOW",
+      "confidence": 0.83,
+      "evidence": [
+        {
+          "description": "Class I mgmt_fee_bps = 60 (institutional); expected daily fee = AUM * 60bps / 365.",
+          "source_table": "share_classes",
+          "source_key": {
+            "fund_id": "ATLAS",
+            "class_code": "I"
+          },
+          "source_fields": [
+            "mgmt_fee_bps"
+          ],
+          "observed_value": 60,
+          "expected_value": null
+        },
+        {
+          "description": "On 2026-04-23 Class I mgmt_fee_daily booked is 44,228 USD; expected based on Class I AUM is ~4,083 USD. Excess is ~10x.",
+          "source_table": "fee_accruals",
+          "source_key": {
+            "fund_id": "ATLAS",
+            "class_code": "I",
+            "as_of_date": "2026-04-23"
+          },
+          "source_fields": [
+            "mgmt_fee_daily"
+          ],
+          "observed_value": 44228.61,
+          "expected_value": 4083.79
+        },
+        {
+          "description": "Class A mgmt fee on the same day is 4,083 USD. The Class I overcharge matches Class A's daily fee being booked twice.",
+          "source_table": "fee_accruals",
+          "source_key": {
+            "fund_id": "ATLAS",
+            "class_code": "A",
+            "as_of_date": "2026-04-23"
+          },
+          "source_fields": [
+            "mgmt_fee_daily"
+          ],
+          "observed_value": 4083.79,
+          "expected_value": null
+        }
+      ],
+      "recommended_action": "LOG_ONLY",
+      "reasoning": "ATLAS Class I shows an unexpectedly large management-fee accrual on 2026-04-23. Expected daily fee given Class I AUM and 60 bps annual is ~4,083 USD, but ~44,228 USD was booked -- almost exactly 10x. Class A's 150 bps fee on the same day is ~4,083 USD; the size of the Class I overcharge is consistent with Class A's fee being booked to Class I (possibly via a misconfigured allocation rule). NAV impact on Class I is sub-tolerance (~-9 bps), so log for follow-up rather than blocking the strike.",
+      "bps_impact": -7.8
+    }
+  ],
+  "policy_actions": [
+    {
+      "verdict_defect_type": "class_fee_misallocation",
+      "severity": "LOW",
+      "confidence": 0.83,
+      "action": "LOG_ONLY",
+      "escalate_to": null,
+      "notification_channel": null,
+      "rule_matched": "default_low"
+    }
+  ],
+  "tool_call_log": [
+    {
+      "iteration": 0,
+      "tool_name": "get_share_classes",
+      "arguments": {
+        "fund_id": "ATLAS"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 2,
+        "element_type": "ShareClass"
+      },
+      "latency_ms": 1.549,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0000"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_nav_history",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "A",
+        "start_date": "2026-04-22",
+        "end_date": "2026-04-23"
+      },
+      "result_summary": {
+        "type": "DataFrame",
+        "rows": 2,
+        "cols": 8
+      },
+      "latency_ms": 2.6246,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0010"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_nav_history",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "I",
+        "start_date": "2026-04-22",
+        "end_date": "2026-04-23"
+      },
+      "result_summary": {
+        "type": "DataFrame",
+        "rows": 2,
+        "cols": 8
+      },
+      "latency_ms": 1.8261,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0011"
+    },
+    {
+      "iteration": 2,
+      "tool_name": "get_fee_accruals",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "A",
+        "start_date": "2026-04-23",
+        "end_date": "2026-04-23"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 1,
+        "element_type": "FeeAccrual"
+      },
+      "latency_ms": 1.3444,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0020"
+    },
+    {
+      "iteration": 2,
+      "tool_name": "get_fee_accruals",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "I",
+        "start_date": "2026-04-23",
+        "end_date": "2026-04-23"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 1,
+        "element_type": "FeeAccrual"
+      },
+      "latency_ms": 3.2681,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0021"
+    }
+  ],
+  "message_history": [
+    {
+      "role": "user",
+      "content": "Evaluate the pre-close NAV pack for fund ATLAS, share class I on 2026-04-23. Work through the defect checklist. Use tools to gather evidence. Reconcile the day's NAV move in basis points against the drivers you identify. Produce one or more structured verdicts inside <verdicts>...</verdicts> at the end of your final response."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Orient and pull both share classes' fee terms."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0000",
+          "name": "get_share_classes",
+          "input": {
+            "fund_id": "ATLAS"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0000",
+          "content": "{\"type\": \"list\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"items\": [{\"fund_id\": \"ATLAS\", \"class_code\": \"A\", \"class_name\": \"Class A (Retail)\", \"mgmt_fee_bps\": 150, \"perf_fee_bps\": 0, \"has_hwm\": false, \"initial_nav_per_share\": 100.0, \"initial_shares\": 1000000.0}, {\"fund_id\": \"ATLAS\", \"class_code\": \"I\", \"class_name\": \"Class I (Institutional)\", \"mgmt_fee_bps\": 60, \"perf_fee_bps\": 0, \"has_hwm\": false, \"initial_nav_per_share\": 1000.0, \"initial_shares\": 200000.0}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Pull NAV and fee accrual rows for both classes on the as-of date."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0010",
+          "name": "get_nav_history",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "A",
+            "start_date": "2026-04-22",
+            "end_date": "2026-04-23"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0011",
+          "name": "get_nav_history",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "I",
+            "start_date": "2026-04-22",
+            "end_date": "2026-04-23"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0010",
+          "content": "{\"type\": \"DataFrame\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"columns\": [\"as_of_date\", \"gav_base\", \"fees_accrued\", \"nav_base\", \"shares_outstanding\", \"nav_per_share\", \"prior_nav_per_share\", \"nav_move_bps\"], \"records\": [{\"as_of_date\": \"2026-04-22\", \"gav_base\": 99600104.75568412, \"fees_accrued\": 4093.154989959621, \"nav_base\": 99435597.67069417, \"shares_outstanding\": 954322.7653910932, \"nav_per_share\": 104.19493412162733, \"prior_nav_per_share\": 103.96846574583661, \"nav_move_bps\": 21.782410095803062}, {\"as_of_date\": \"2026-04-23\", \"gav_base\": 99372266.96487808, \"fees_accrued\": 4083.7917930771814, \"nav_base\": 99368183.173085, \"shares_outstanding\": 954322.7653910932, \"nav_per_share\": 104.12429292972247, \"prior_nav_per_share\": 104.19493412162733, \"nav_move_bps\": -6.779714628197819}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0011",
+          "content": "{\"type\": \"DataFrame\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"columns\": [\"as_of_date\", \"gav_base\", \"fees_accrued\", \"nav_base\", \"shares_outstanding\", \"nav_per_share\", \"prior_nav_per_share\", \"nav_move_bps\"], \"records\": [{\"as_of_date\": \"2026-04-22\", \"gav_base\": 206123563.79272807, \"fees_accrued\": 3388.3325554969, \"nav_base\": 206398300.22017258, \"shares_outstanding\": 197707.98719286532, \"nav_per_share\": 1043.9552956392693, \"prior_nav_per_share\": 1041.6605660895439, \"nav_move_bps\": 22.02953269451191}, {\"as_of_date\": \"2026-04-23\", \"gav_base\": 206266844.78229737, \"fees_accrued\": 44228.60579020684, \"nav_base\": 206222616.17650715, \"shares_outstanding\": 197707.98719286532, \"nav_per_share\": 1043.0666919659434, \"prior_nav_per_share\": 1043.9552956392693, \"nav_move_bps\": -8.511893919573854}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0020",
+          "name": "get_fee_accruals",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "A",
+            "start_date": "2026-04-23",
+            "end_date": "2026-04-23"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0021",
+          "name": "get_fee_accruals",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "I",
+            "start_date": "2026-04-23",
+            "end_date": "2026-04-23"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0020",
+          "content": "{\"type\": \"list\", \"rows\": 1, \"rows_returned\": 1, \"truncated\": false, \"items\": [{\"as_of_date\": \"2026-04-23\", \"fund_id\": \"ATLAS\", \"class_code\": \"A\", \"mgmt_fee_daily\": 4083.7917930771814, \"perf_fee_delta\": 0.0, \"perf_fee_balance\": 0.0, \"hwm_nav_per_share\": 100.0}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0021",
+          "content": "{\"type\": \"list\", \"rows\": 1, \"rows_returned\": 1, \"truncated\": false, \"items\": [{\"as_of_date\": \"2026-04-23\", \"fund_id\": \"ATLAS\", \"class_code\": \"I\", \"mgmt_fee_daily\": 44228.60579020684, \"perf_fee_delta\": 0.0, \"perf_fee_balance\": 0.0, \"hwm_nav_per_share\": 1000.0}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Class-level fee misallocation; Class I overcharged. Sub-tolerance, log for ops follow-up.\n\n<verdicts>\n[\n  {\n    \"defect_type\": \"class_fee_misallocation\",\n    \"severity\": \"LOW\",\n    \"confidence\": 0.83,\n    \"evidence\": [\n      {\n        \"description\": \"Class I mgmt_fee_bps = 60 (institutional); expected daily fee = AUM * 60bps / 365.\",\n        \"source_table\": \"share_classes\",\n        \"source_key\": {\n          \"fund_id\": \"ATLAS\",\n          \"class_code\": \"I\"\n        },\n        \"source_fields\": [\n          \"mgmt_fee_bps\"\n        ],\n        \"observed_value\": 60,\n        \"expected_value\": null\n      },\n      {\n        \"description\": \"On 2026-04-23 Class I mgmt_fee_daily booked is 44,228 USD; expected based on Class I AUM is ~4,083 USD. Excess is ~10x.\",\n        \"source_table\": \"fee_accruals\",\n        \"source_key\": {\n          \"fund_id\": \"ATLAS\",\n          \"class_code\": \"I\",\n          \"as_of_date\": \"2026-04-23\"\n        },\n        \"source_fields\": [\n          \"mgmt_fee_daily\"\n        ],\n        \"observed_value\": 44228.61,\n        \"expected_value\": 4083.79\n      },\n      {\n        \"description\": \"Class A mgmt fee on the same day is 4,083 USD. The Class I overcharge matches Class A's daily fee being booked twice.\",\n        \"source_table\": \"fee_accruals\",\n        \"source_key\": {\n          \"fund_id\": \"ATLAS\",\n          \"class_code\": \"A\",\n          \"as_of_date\": \"2026-04-23\"\n        },\n        \"source_fields\": [\n          \"mgmt_fee_daily\"\n        ],\n        \"observed_value\": 4083.79,\n        \"expected_value\": null\n      }\n    ],\n    \"recommended_action\": \"LOG_ONLY\",\n    \"reasoning\": \"ATLAS Class I shows an unexpectedly large management-fee accrual on 2026-04-23. Expected daily fee given Class I AUM and 60 bps annual is ~4,083 USD, but ~44,228 USD was booked -- almost exactly 10x. Class A's 150 bps fee on the same day is ~4,083 USD; the size of the Class I overcharge is consistent with Class A's fee being booked to Class I (possibly via a misconfigured allocation rule). NAV impact on Class I is sub-tolerance (~-9 bps), so log for follow-up rather than blocking the strike.\",\n    \"bps_impact\": -7.8\n  }\n]\n</verdicts>"
+        }
+      ]
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 759,
+    "output_tokens": 1080,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 11379
+  },
+  "total_latency_ms": 17468.0,
+  "iterations": 3,
+  "converged": true,
+  "halted_reason": null,
+  "started_at": "2026-05-02T15:07:48",
+  "finished_at": "2026-05-02T15:08:05.468000"
+}

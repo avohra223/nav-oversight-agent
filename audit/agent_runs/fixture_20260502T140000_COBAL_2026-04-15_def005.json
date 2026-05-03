@@ -1,0 +1,381 @@
+{
+  "run_id": "fixture_20260502T140000_COBAL_2026-04-15_def005",
+  "fund_id": "COBAL",
+  "as_of_date": "2026-04-15",
+  "share_class": "I",
+  "model_version": "claude-opus-4-7",
+  "prompt_version": "2b800702d652",
+  "verdicts": [
+    {
+      "defect_type": "stale_hwm_perf_fee",
+      "severity": "HIGH",
+      "confidence": 0.92,
+      "evidence": [
+        {
+          "description": "Class I has perf_fee_bps=2000 with HWM=true. Initial NAV/share was 100.0.",
+          "source_table": "share_classes",
+          "source_key": {
+            "fund_id": "COBAL",
+            "class_code": "I"
+          },
+          "source_fields": [
+            "perf_fee_bps",
+            "has_hwm"
+          ],
+          "observed_value": {
+            "perf_fee_bps": 2000,
+            "has_hwm": true
+          },
+          "expected_value": null
+        },
+        {
+          "description": "Maximum prior NAV/share over the full window is 102.50. This is the true HWM under daily MTM.",
+          "source_table": "nav",
+          "source_key": {
+            "fund_id": "COBAL",
+            "class_code": "I"
+          },
+          "source_fields": [
+            "nav_per_share"
+          ],
+          "observed_value": 102.5,
+          "expected_value": null
+        },
+        {
+          "description": "On 2026-04-15 the stored hwm_nav_per_share is 90.00 -- materially below the true HWM. Perf fee is being accrued where none should be.",
+          "source_table": "fee_accruals",
+          "source_key": {
+            "fund_id": "COBAL",
+            "class_code": "I",
+            "as_of_date": "2026-04-15"
+          },
+          "source_fields": [
+            "hwm_nav_per_share",
+            "perf_fee_balance"
+          ],
+          "observed_value": {
+            "hwm_nav_per_share": 90.0,
+            "perf_fee_balance": 25580.0
+          },
+          "expected_value": {
+            "hwm_nav_per_share": 102.5,
+            "perf_fee_balance": 580.0
+          }
+        }
+      ],
+      "recommended_action": "BLOCK_NAV",
+      "reasoning": "COBAL Class I shows a -201 bps NAV move on 2026-04-15. Perf-fee accrual is using a stale HWM (90.00) instead of the all-time-high prior NAV/share (102.50). This causes the fee engine to charge 20% of (102.79 - 90.00) per share rather than 20% of (102.79 - 102.50). The over-accrual matches the unexplained portion of the day's move. Recommend BLOCK_NAV until the HWM reference is restated and the accrual recomputed.",
+      "bps_impact": -201.2
+    }
+  ],
+  "policy_actions": [
+    {
+      "verdict_defect_type": "stale_hwm_perf_fee",
+      "severity": "HIGH",
+      "confidence": 0.92,
+      "action": "BLOCK_NAV",
+      "escalate_to": "controller",
+      "notification_channel": "email:nav-oversight@example.com",
+      "rule_matched": "default_high_confident"
+    }
+  ],
+  "tool_call_log": [
+    {
+      "iteration": 0,
+      "tool_name": "get_funds",
+      "arguments": {
+        "fund_id": "COBAL"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 1,
+        "element_type": "Fund"
+      },
+      "latency_ms": 2.0045,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0000"
+    },
+    {
+      "iteration": 0,
+      "tool_name": "get_share_classes",
+      "arguments": {
+        "fund_id": "COBAL"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 2,
+        "element_type": "ShareClass"
+      },
+      "latency_ms": 1.5002,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0001"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_nav_history",
+      "arguments": {
+        "fund_id": "COBAL",
+        "share_class": "I",
+        "start_date": "2026-01-05",
+        "end_date": "2026-04-15"
+      },
+      "result_summary": {
+        "type": "DataFrame",
+        "rows": 73,
+        "cols": 8
+      },
+      "latency_ms": 3.2635,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0010"
+    },
+    {
+      "iteration": 2,
+      "tool_name": "get_fee_accruals",
+      "arguments": {
+        "fund_id": "COBAL",
+        "share_class": "I",
+        "start_date": "2026-04-14",
+        "end_date": "2026-04-15"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 2,
+        "element_type": "FeeAccrual"
+      },
+      "latency_ms": 2.6795,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0020"
+    },
+    {
+      "iteration": 3,
+      "tool_name": "compute_perf_fee",
+      "arguments": {
+        "nav_per_share": 102.79,
+        "hwm_nav_per_share": 102.5,
+        "hurdle_bps": 0,
+        "perf_fee_bps": 2000,
+        "period_days": 365
+      },
+      "result_summary": {
+        "type": "float",
+        "value": 0.05800000000000125
+      },
+      "latency_ms": 0.4101,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0030"
+    },
+    {
+      "iteration": 4,
+      "tool_name": "compute_perf_fee",
+      "arguments": {
+        "nav_per_share": 102.79,
+        "hwm_nav_per_share": 90.0,
+        "hurdle_bps": 0,
+        "perf_fee_bps": 2000,
+        "period_days": 365
+      },
+      "result_summary": {
+        "type": "float",
+        "value": 2.5580000000000016
+      },
+      "latency_ms": 0.3673,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0040"
+    }
+  ],
+  "message_history": [
+    {
+      "role": "user",
+      "content": "Evaluate the pre-close NAV pack for fund COBAL, share class I on 2026-04-15. Work through the defect checklist. Use tools to gather evidence. Reconcile the day's NAV move in basis points against the drivers you identify. Produce one or more structured verdicts inside <verdicts>...</verdicts> at the end of your final response."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Orient on the fund and the perf-fee terms."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0000",
+          "name": "get_funds",
+          "input": {
+            "fund_id": "COBAL"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0001",
+          "name": "get_share_classes",
+          "input": {
+            "fund_id": "COBAL"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0000",
+          "content": "{\"type\": \"list\", \"rows\": 1, \"rows_returned\": 1, \"truncated\": false, \"items\": [{\"fund_id\": \"COBAL\", \"name\": \"Cobalt Long/Short Equity Fund\", \"base_ccy\": \"USD\", \"strategy\": \"long_short_equity\", \"tolerance_bps\": 100, \"benchmark\": \"HFRI Equity Hedge\", \"inception_date\": \"2026-01-05\"}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0001",
+          "content": "{\"type\": \"list\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"items\": [{\"fund_id\": \"COBAL\", \"class_code\": \"F\", \"class_name\": \"Founder Class\", \"mgmt_fee_bps\": 100, \"perf_fee_bps\": 1500, \"has_hwm\": true, \"initial_nav_per_share\": 1000.0, \"initial_shares\": 100000.0}, {\"fund_id\": \"COBAL\", \"class_code\": \"I\", \"class_name\": \"Class I\", \"mgmt_fee_bps\": 150, \"perf_fee_bps\": 2000, \"has_hwm\": true, \"initial_nav_per_share\": 100.0, \"initial_shares\": 1000000.0}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Class I has a 20% perf fee with HWM. Pull NAV history for the full window to find the true HWM."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0010",
+          "name": "get_nav_history",
+          "input": {
+            "fund_id": "COBAL",
+            "share_class": "I",
+            "start_date": "2026-01-05",
+            "end_date": "2026-04-15"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0010",
+          "content": "{\"type\": \"DataFrame\", \"rows\": 73, \"rows_returned\": 73, \"truncated\": false, \"columns\": [\"as_of_date\", \"gav_base\", \"fees_accrued\", \"nav_base\", \"shares_outstanding\", \"nav_per_share\", \"prior_nav_per_share\", \"nav_move_bps\"], \"records\": [{\"as_of_date\": \"2026-01-05\", \"gav_base\": 99732739.8763158, \"fees_accrued\": 4098.605748341745, \"nav_base\": 99478056.97056746, \"shares_outstanding\": 997487.3386741512, \"nav_per_share\": 99.72864127056746, \"prior_nav_per_share\": 100.0, \"nav_move_bps\": -27.13587294325359}, {\"as_of_date\": \"2026-01-06\", \"gav_base\": 99398956.88536325, \"fees_accrued\": 4084.8886391245173, \"nav_base\": 99394871.99672413, \"shares_outstanding\": 997487.3386741512, \"nav_per_share\": 99.64524675454894, \"prior_nav_per_share\": 99.72864127056746, \"nav_move_bps\": -8.362143006869216}, {\"as_of_date\": \"2026-01-07\", \"gav_base\": 99456281.53627509, \"fees_accrued\": 4087.2444466962365, \"nav_base\": 99452194.2918284, \"shares_outstanding\": 997487.3386741512, \"nav_per_share\": 99.70271344398127, \"prior_nav_per_share\": 99.64524675454894, \"nav_move_bps\": 5.767128017042378}, {\"as_of_date\": \"2026-01-08\", \"gav_base\": 99722464.37422656, \"fees_accrued\": 4098.183467433968, \"nav_base\": 99528750.81075913, \"shares_outstanding\": 995590.6074300185, \"nav_per_share\": 99.96955582744903, \"prior_nav_per_share\": 99.70271344398127, \"nav_move_bps\": 26.763803536569153}, {\"as_of_date\": \"2026-01-09\", \"gav_base\": 99288772.97269478, \"fees_accrued\": 4080.360533124443, \"nav_base\": 97659110.22216165, \"shares_outstanding\": 979289.8613985059, \"nav_per_share\": 99.72441671426729, \"prior_nav_per_share\": 99.96955582744903, \"nav_move_bps\": -24.521376648392046}, {\"as_of_date\": \"2026-01-12\", \"gav_base\": 97527696.05242011, \"fees_accrued\": 4007.987509003566, \"nav_base\": 97523688.06491111, \"shares_outstanding\": 979289.8613985059, \"nav_per_share\": 99.5861306331093, \"prior_nav_per_share\": 99.72441671426729, \"nav_move_bps\": -13.866822761591235}, {\"as_of_date\": \"2026-01-13\", \"gav_base\": 97826507.9149593, \"fees_accrued\": 4020.267448559971, \"nav_base\": 97991095.96751073, \"shares_outstanding\": 980977.7802226356, \"nav_per_share\": 99.89124926486244, \"prior_nav_per_share\": 99.5861306331093, \"nav_move_bps\": 30.638667233415795}, {\"as_of_date\": \"2026-01-14\", \"gav_base\": 97825076.91637802, \"fees_accrued\": 4020.208640399097, \"nav_base\": 97821056.70773762, \"shares_outstanding\": 980977.7802226356, \"nav_per_share\": 99.71791275999837, \"prior_nav_per_share\": 99.89124926486244, \"nav_move_bps\": -17.352521481082128}, {\"as_of_date\": \"2026-01-15\", \"gav_base\": 97979333.45984451, \"fees_accrued\": 4026.5479504045693, \"nav_base\": 97975306.91189411, \"shares_outstanding\": 980977.7802226356, \"nav_per_share\": 99.87515404238651, \"prior_nav_per_share\": 99.71791275999837, \"nav_move_bps\": 15.768609474067219}, {\"as_of_date\": \"2026-01-16\", \"gav_base\": 97886642.9776692, \"fees_accrued\": 4022.7387525069526, \"nav_base\": 98349923.71891668, \"shares_outstanding\": 985661.0869157114, \"nav_per_share\": 99.78067007460857, \"prior_nav_per_share\": 99.87515404238651, \"nav_move_bps\": -9.460207464395687}, {\"as_of_date\": \"2026-01-19\", \"gav_base\": 98683560.10011794, \"fees_accrued\": 26734.67272634877, \"nav_base\": 98321840.31739157, \"shares_outstanding\": 982314.3160644013, \"nav_per_share\": 100.09203643830995, \"prior_nav_per_share\": 99.78067007460857, \"nav_move_bps\": 31.205078445410983}, {\"as_of_date\": \"2026-01-20\", \"gav_base\": 98216203.93741375, \"fees_accrued\": 4036.2823535923458, \"nav_base\": 97809472.16506016, \"shares_outstanding\": 978286.5712921761, \"nav_per_share\": 99.98038921853735, \"prior_nav_per_share\": 100.09203643830995, \"nav_move_bps\": -11.154455813415787}, {\"as_of_date\": \"2026-01-21\", \"gav_base\": 98136301.3120865, \"fees_accrued\": 64755.23552102215, \"nav_base\": 98539906.47656545, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 100.2482799564825, \"prior_nav_per_share\": 99.98038921853735, \"nav_move_bps\": 26.794328371697596}, {\"as_of_date\": \"2026-01-22\", \"gav_base\": 98578494.54938284, \"fees_accrued\": 59768.33384747101, \"nav_base\": 98518726.21553536, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 100.22673249603508, \"prior_nav_per_share\": 100.2482799564825, \"nav_move_bps\": -2.149409491791765}, {\"as_of_date\": \"2026-01-23\", \"gav_base\": 98151550.15272814, \"fees_accrued\": 4033.625348742252, \"nav_base\": 98147516.5273794, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.84908719403079, \"prior_nav_per_share\": 100.22673249603508, \"nav_move_bps\": -37.67909943779068}, {\"as_of_date\": \"2026-01-26\", \"gav_base\": 97906459.21287058, \"fees_accrued\": 4023.553118337147, \"nav_base\": 97902435.65975225, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.59975739143242, \"prior_nav_per_share\": 99.84908719403079, \"nav_move_bps\": -24.97066418983507}, {\"as_of_date\": \"2026-01-27\", \"gav_base\": 97909747.68409044, \"fees_accrued\": 4023.6882609900176, \"nav_base\": 97905723.99582945, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.60310273696243, \"prior_nav_per_share\": 99.59975739143242, \"nav_move_bps\": 0.3358788834062487}, {\"as_of_date\": \"2026-01-28\", \"gav_base\": 98027116.3060514, \"fees_accrued\": 4028.5116290158107, \"nav_base\": 98023087.79442239, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.72250125639272, \"prior_nav_per_share\": 99.60310273696243, \"nav_move_bps\": 11.987429723510079}, {\"as_of_date\": \"2026-01-29\", \"gav_base\": 98039724.41515063, \"fees_accrued\": 4029.029770485642, \"nav_base\": 98035695.38538015, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.73532742350716, \"prior_nav_per_share\": 99.72250125639272, \"nav_move_bps\": 1.2861858610491161}, {\"as_of_date\": \"2026-01-30\", \"gav_base\": 97873987.43504384, \"fees_accrued\": 4022.21866171413, \"nav_base\": 97869965.21638213, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.56672401222932, \"prior_nav_per_share\": 99.73532742350716, \"nav_move_bps\": -16.905084249826395}, {\"as_of_date\": \"2026-02-02\", \"gav_base\": 97691513.76462665, \"fees_accrued\": 4014.71974375178, \"nav_base\": 97687499.0448829, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.38109444856221, \"prior_nav_per_share\": 99.56672401222932, \"nav_move_bps\": -18.64373519453233}, {\"as_of_date\": \"2026-02-03\", \"gav_base\": 98180853.55687091, \"fees_accrued\": 4034.8295982275713, \"nav_base\": 98176818.72727267, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 99.87889740233398, \"prior_nav_per_share\": 99.38109444856221, \"nav_move_bps\": 50.0903070683556}, {\"as_of_date\": \"2026-02-04\", \"gav_base\": 98754062.15465719, \"fees_accrued\": 94887.62698799472, \"nav_base\": 98659174.52766919, \"shares_outstanding\": 982958.57564181, \"nav_per_share\": 100.3696157422005, \"prior_nav_per_share\": 99.87889740233398, \"nav_move_bps\": 49.131333307554925}, {\"as_of_date\": \"2026-02-05\", \"gav_base\": 98664420.31508783, \"fees_accrued\": 76956.31194514978, \"nav_base\": 98137292.29314266, \"shares_outstanding\": 978470.173923294, \"nav_per_share\": 100.29666198168246, \"prior_nav_per_share\": 100.3696157422005, \"nav_move_bps\": -7.268510492798308}, {\"as_of_date\": \"2026-02-06\", \"gav_base\": 98545530.17702842, \"fees_accrued\": 142942.40998671908, \"nav_base\": 98582678.8070417, \"shares_outstanding\": 980260.9165778265, \"nav_per_share\": 100.56779490016, \"prior_nav_per_share\": 100.29666198168246, \"nav_move_bps\": 27.033094932615853}, {\"as_of_date\": \"2026-02-09\", \"gav_base\": 98466415.20009662, \"fees_accrued\": 91301.96046937275, \"nav_base\": 98237983.71962723, \"shares_outstanding\": 978894.4865475235, \"nav_per_share\": 100.35604967610364, \"prior_nav_per_share\": 100.56779490016, \"nav_move_bps\": -21.054973340777217}, {\"as_of_date\": \"2026-02-10\", \"gav_base\": 98460236.81776468, \"fees_accrued\": 117394.68148414446, \"nav_base\": 98342842.13628054, \"shares_outstanding\": 978894.4865475235, \"nav_per_share\": 100.46316889895587, \"prior_nav_per_share\": 100.35604967610364, \"nav_move_bps\": 10.673917835342106}, {\"as_of_date\": \"2026-02-11\", \"gav_base\": 98374902.23329414, \"fees_accrued\": 100324.9590694536, \"nav_base\": 98045231.22422469, \"shares_outstanding\": 976610.0138987122, \"nav_per_share\": 100.39343220823591, \"prior_nav_per_share\": 100.46316889895587, \"nav_move_bps\": -6.941518118953605}, {\"as_of_date\": \"2026-02-12\", \"gav_base\": 98267871.81061567, \"fees_accrued\": 124604.8087015677, \"nav_base\": 98143267.0019141, \"shares_outstanding\": 976610.0138987122, \"nav_per_share\": 100.49381596049545, \"prior_nav_per_share\": 100.39343220823591, \"nav_move_bps\": 9.999035798609057}, {\"as_of_date\": \"2026-02-13\", \"gav_base\": 98289402.4393413, \"fees_accrued\": 128911.64230298111, \"nav_base\": 98160490.79703833, \"shares_outstanding\": 976610.0138987122, \"nav_per_share\": 100.51145226862164, \"prior_nav_per_share\": 100.49381596049545, \"nav_move_bps\": 1.7549645177283857}, {\"as_of_date\": \"2026-02-16\", \"gav_base\": 98218701.47786999, \"fees_accrued\": 114769.1255935454, \"nav_base\": 98103932.35227644, \"shares_outstanding\": 976610.0138987122, \"nav_per_share\": 100.45353923889947, \"prior_nav_per_share\": 100.51145226862164, \"nav_move_bps\": -5.761833941807515}, {\"as_of_date\": \"2026-02-17\", \"gav_base\": 98545158.58901264, \"fees_accrued\": 180071.2806586062, \"nav_base\": 98365087.30835404, \"shares_outstanding\": 976610.0138987122, \"nav_per_share\": 100.720948903311, \"prior_nav_per_share\": 100.45353923889947, \"nav_move_bps\": 26.620233237932833}, {\"as_of_date\": \"2026-02-18\", \"gav_base\": 98294572.59954506, \"fees_accrued\": 129945.84432160147, \"nav_base\": 98164626.75522347, \"shares_outstanding\": 976610.0138987122, \"nav_per_share\": 100.51568728375182, \"prior_nav_per_share\": 100.720948903311, \"nav_move_bps\": -20.379238062602223}, {\"as_of_date\": \"2026-02-19\", \"gav_base\": 98339657.39313647, \"fees_accrued\": 138964.2852796725, \"nav_base\": 98558903.4978568, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.55261743204032, \"prior_nav_per_share\": 100.51568728375182, \"nav_move_bps\": 3.674068126724439}, {\"as_of_date\": \"2026-02-20\", \"gav_base\": 98336263.22020124, \"fees_accrued\": 67036.99189012115, \"nav_base\": 98269226.22831112, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.25708038130581, \"prior_nav_per_share\": 100.55261743204032, \"nav_move_bps\": -29.39128371613475}, {\"as_of_date\": \"2026-02-23\", \"gav_base\": 98088606.84036973, \"fees_accrued\": 17497.57379626096, \"nav_base\": 98071109.26657346, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.05495578014445, \"prior_nav_per_share\": 100.25708038130581, \"nav_move_bps\": -20.160631088859127}, {\"as_of_date\": \"2026-02-24\", \"gav_base\": 98443337.14965577, \"fees_accrued\": 88455.2980198045, \"nav_base\": 98354881.85163596, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.3444687025778, \"prior_nav_per_share\": 100.05495578014445, \"nav_move_bps\": 28.935390573707753}, {\"as_of_date\": \"2026-02-25\", \"gav_base\": 98835221.53552994, \"fees_accrued\": 166845.05906485708, \"nav_base\": 98668376.47646508, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.66430490162935, \"prior_nav_per_share\": 100.3444687025778, \"nav_move_bps\": 31.873824555248564}, {\"as_of_date\": \"2026-02-26\", \"gav_base\": 98537683.38952647, \"fees_accrued\": 107327.64778813306, \"nav_base\": 98430355.74173833, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.42146932787125, \"prior_nav_per_share\": 100.66430490162935, \"nav_move_bps\": -24.123305077743407}, {\"as_of_date\": \"2026-02-27\", \"gav_base\": 99129102.67615049, \"fees_accrued\": 225630.94903468524, \"nav_base\": 98903471.7271158, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.90415581270696, \"prior_nav_per_share\": 100.42146932787125, \"nav_move_bps\": 48.06606476347896}, {\"as_of_date\": \"2026-03-02\", \"gav_base\": 98966539.5026898, \"fees_accrued\": 193112.9697998584, \"nav_base\": 98773426.53288993, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.77147997927348, \"prior_nav_per_share\": 100.90415581270696, \"nav_move_bps\": -13.148698620475407}, {\"as_of_date\": \"2026-03-03\", \"gav_base\": 99241391.85670306, \"fees_accrued\": 248092.4768442867, \"nav_base\": 98993299.37985876, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.99580055793567, \"prior_nav_per_share\": 100.77147997927348, \"nav_move_bps\": 22.260323923823933}, {\"as_of_date\": \"2026-03-04\", \"gav_base\": 98920372.69841628, \"fees_accrued\": 183878.0911324131, \"nav_base\": 98736494.60728386, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.73380097053149, \"prior_nav_per_share\": 100.99580055793567, \"nav_move_bps\": -25.941631825957543}, {\"as_of_date\": \"2026-03-05\", \"gav_base\": 99052237.410761, \"fees_accrued\": 210255.36887957135, \"nav_base\": 98841982.04188143, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.84142227391995, \"prior_nav_per_share\": 100.73380097053149, \"nav_move_bps\": 10.683733002385676}, {\"as_of_date\": \"2026-03-06\", \"gav_base\": 98987989.48770829, \"fees_accrued\": 197403.6720085435, \"nav_base\": 98790585.81569974, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.78898637127408, \"prior_nav_per_share\": 100.84142227391995, \"nav_move_bps\": -5.19983767220511}, {\"as_of_date\": \"2026-03-09\", \"gav_base\": 99068714.33215614, \"fees_accrued\": 213551.294865603, \"nav_base\": 98855163.03729054, \"shares_outstanding\": 980172.4312593752, \"nav_per_share\": 100.85486990312145, \"prior_nav_per_share\": 100.78898637127408, \"nav_move_bps\": 6.536778890173789}, {\"as_of_date\": \"2026-03-10\", \"gav_base\": 98391319.33657464, \"fees_accrued\": 78050.02522890196, \"nav_base\": 97956987.96134573, \"shares_outstanding\": 976620.3455695387, \"nav_per_share\": 100.30201439661782, \"prior_nav_per_share\": 100.85486990312145, \"nav_move_bps\": -54.81693715283065}, {\"as_of_date\": \"2026-03-11\", \"gav_base\": 98372694.911766, \"fees_accrued\": 145366.24175404783, \"nav_base\": 98227328.67001195, \"shares_outstanding\": 976620.3455695387, \"nav_per_share\": 100.57882688561892, \"prior_nav_per_share\": 100.30201439661782, \"nav_move_bps\": 27.597899271147863}, {\"as_of_date\": \"2026-03-12\", \"gav_base\": 98032665.56771237, \"fees_accrued\": 77349.19389639077, \"nav_base\": 97548394.76381595, \"shares_outstanding\": 972563.3128520766, \"nav_per_share\": 100.30030279237226, \"prior_nav_per_share\": 100.57882688561892, \"nav_move_bps\": -27.69211988954745}, {\"as_of_date\": \"2026-03-13\", \"gav_base\": 97541466.64971204, \"fees_accrued\": 60233.915640047046, \"nav_base\": 97481232.734072, \"shares_outstanding\": 972563.3128520766, \"nav_per_share\": 100.2312460750805, \"prior_nav_per_share\": 100.30030279237226, \"nav_move_bps\": -6.884995894250734}, {\"as_of_date\": \"2026-03-16\", \"gav_base\": 97886470.77896075, \"fees_accrued\": 129246.08409129667, \"nav_base\": 97757224.69486946, \"shares_outstanding\": 972563.3128520766, \"nav_per_share\": 100.51502396095212, \"prior_nav_per_share\": 100.2312460750805, \"nav_move_bps\": 28.312317464260772}, {\"as_of_date\": \"2026-03-17\", \"gav_base\": 97972176.73019296, \"fees_accrued\": 146390.09206764138, \"nav_base\": 97585983.6781253, \"shares_outstanding\": 970179.2424630281, \"nav_per_share\": 100.58552008428912, \"prior_nav_per_share\": 100.51502396095212, \"nav_move_bps\": 7.01349117365524}, {\"as_of_date\": \"2026-03-18\", \"gav_base\": 98065235.3449715, \"fees_accrued\": 212686.28226562723, \"nav_base\": 97852549.06270586, \"shares_outstanding\": 970179.2424630281, \"nav_per_share\": 100.86027898750355, \"prior_nav_per_share\": 100.58552008428912, \"nav_move_bps\": 27.315949948281126}, {\"as_of_date\": \"2026-03-19\", \"gav_base\": 97700267.83268856, \"fees_accrued\": 139680.78087712862, \"nav_base\": 97560587.05181143, \"shares_outstanding\": 970179.2424630281, \"nav_per_share\": 100.55934283249654, \"prior_nav_per_share\": 100.86027898750355, \"nav_move_bps\": -29.836934621635393}, {\"as_of_date\": \"2026-03-20\", \"gav_base\": 97845417.47484538, \"fees_accrued\": 168715.4813515239, \"nav_base\": 97832514.97349386, \"shares_outstanding\": 971726.8635007693, \"nav_per_share\": 100.67902684200766, \"prior_nav_per_share\": 100.55934283249654, \"nav_move_bps\": 11.901828924087976}, {\"as_of_date\": \"2026-03-23\", \"gav_base\": 97849847.6774859, \"fees_accrued\": 138649.2467753007, \"nav_base\": 97711198.43071058, \"shares_outstanding\": 971726.8635007693, \"nav_per_share\": 100.55418050160063, \"prior_nav_per_share\": 100.67902684200766, \"nav_move_bps\": -12.40043178038941}, {\"as_of_date\": \"2026-03-24\", \"gav_base\": 98085903.89864515, \"fees_accrued\": 185868.25175962553, \"nav_base\": 97900035.64688551, \"shares_outstanding\": 971726.8635007693, \"nav_per_share\": 100.74851208104737, \"prior_nav_per_share\": 100.55418050160063, \"nav_move_bps\": 19.326056706676642}, {\"as_of_date\": \"2026-03-25\", \"gav_base\": 98048881.45281321, \"fees_accrued\": 178462.54541693837, \"nav_base\": 97870418.90739627, \"shares_outstanding\": 971726.8635007693, \"nav_per_share\": 100.71803361986483, \"prior_nav_per_share\": 100.74851208104737, \"nav_move_bps\": -3.0252021149479447}, {\"as_of_date\": \"2026-03-26\", \"gav_base\": 98285611.09555143, \"fees_accrued\": 225816.25685694563, \"nav_base\": 98059794.83869448, \"shares_outstanding\": 971726.8635007693, \"nav_per_share\": 100.91291958876349, \"prior_nav_per_share\": 100.71803361986483, \"nav_move_bps\": 19.349659826979337}, {\"as_of_date\": \"2026-03-27\", \"gav_base\": 97844245.64589441, \"fees_accrued\": 137528.656280623, \"nav_base\": 97706716.98961379, \"shares_outstanding\": 971726.8635007693, \"nav_per_share\": 100.54956866954666, \"prior_nav_per_share\": 100.91291958876349, \"nav_move_bps\": -36.00638260170652}, {\"as_of_date\": \"2026-03-30\", \"gav_base\": 97892233.96502425, \"fees_accrued\": 147127.89780475255, \"nav_base\": 97311448.04721949, \"shares_outstanding\": 967415.6793958918, \"nav_per_share\": 100.58907470673431, \"prior_nav_per_share\": 100.54956866954666, \"nav_move_bps\": 3.929011104710778}, {\"as_of_date\": \"2026-03-31\", \"gav_base\": 97586519.17970754, \"fees_accrued\": 172198.57194191005, \"nav_base\": 97414320.60776563, \"shares_outstanding\": 967415.6793958918, \"nav_per_share\": 100.69541220232915, \"prior_nav_per_share\": 100.58907470673431, \"nav_move_bps\": 10.571475670182462}, {\"as_of_date\": \"2026-04-01\", \"gav_base\": 98094536.58685696, \"fees_accrued\": 273818.7553139458, \"nav_base\": 98269864.47154301, \"shares_outstanding\": 971857.5963181562, \"nav_per_share\": 101.115497624173, \"prior_nav_per_share\": 100.69541220232915, \"nav_move_bps\": 41.718427151353765}, {\"as_of_date\": \"2026-04-02\", \"gav_base\": 98368301.50204055, \"fees_accrued\": 239742.40039573764, \"nav_base\": 98444749.84164481, \"shares_outstanding\": 974989.1247474706, \"nav_per_share\": 100.9701004276768, \"prior_nav_per_share\": 101.115497624173, \"nav_move_bps\": -14.379318691247756}, {\"as_of_date\": \"2026-04-03\", \"gav_base\": 98765456.56928957, \"fees_accrued\": 256555.9024121479, \"nav_base\": 98508900.66687742, \"shares_outstanding\": 974989.1247474706, \"nav_per_share\": 101.03589687976464, \"prior_nav_per_share\": 100.9701004276768, \"nav_move_bps\": 6.516429300271742}, {\"as_of_date\": \"2026-04-06\", \"gav_base\": 99008280.71900901, \"fees_accrued\": 305128.7156157562, \"nav_base\": 98250812.06339325, \"shares_outstanding\": 970520.9136190787, \"nav_per_share\": 101.2351312420619, \"prior_nav_per_share\": 101.03589687976464, \"nav_move_bps\": 19.719166004370514}, {\"as_of_date\": \"2026-04-07\", \"gav_base\": 98507143.112585, \"fees_accrued\": 294248.94114186545, \"nav_base\": 97967746.75144312, \"shares_outstanding\": 968098.4140070172, \"nav_per_share\": 101.19606161314609, \"prior_nav_per_share\": 101.2351312420619, \"nav_move_bps\": -3.8592955268057505}, {\"as_of_date\": \"2026-04-08\", \"gav_base\": 98165429.68447644, \"fees_accrued\": 274345.0133473101, \"nav_base\": 97891084.67112912, \"shares_outstanding\": 968098.4140070172, \"nav_per_share\": 101.11687330005229, \"prior_nav_per_share\": 101.19606161314609, \"nav_move_bps\": -7.825236657580392}, {\"as_of_date\": \"2026-04-09\", \"gav_base\": 98180480.43324204, \"fees_accrued\": 277355.65791956737, \"nav_base\": 97685807.18532246, \"shares_outstanding\": 965949.5059440964, \"nav_per_share\": 101.12931015979623, \"prior_nav_per_share\": 101.11687330005229, \"nav_move_bps\": 1.2299490023814919}, {\"as_of_date\": \"2026-04-10\", \"gav_base\": 98069862.34473328, \"fees_accrued\": 298206.56471715757, \"nav_base\": 97771655.78001612, \"shares_outstanding\": 965949.5059440964, \"nav_per_share\": 101.21818498623942, \"prior_nav_per_share\": 101.12931015979623, \"nav_move_bps\": 8.788236200045763}, {\"as_of_date\": \"2026-04-13\", \"gav_base\": 97677040.6179556, \"fees_accrued\": 219629.30467471303, \"nav_base\": 97457411.31328088, \"shares_outstanding\": 965949.5059440964, \"nav_per_share\": 100.89286315026197, \"prior_nav_per_share\": 101.21818498623942, \"nav_move_bps\": -32.14065101262986}, {\"as_of_date\": \"2026-04-14\", \"gav_base\": 97923017.96041198, \"fees_accrued\": 268832.8600923155, \"nav_base\": 97654185.10031965, \"shares_outstanding\": 965949.5059440964, \"nav_per_share\": 101.09657337095975, \"prior_nav_per_share\": 100.89286315026197, \"nav_move_bps\": 20.190746335979615}, {\"as_of_date\": \"2026-04-15\", \"gav_base\": 97882438.01036377, \"fees_accrued\": 2201711.3745171716, \"nav_base\": 96096235.5758466, \"shares_outstanding\": 970060.892684005, \"nav_per_share\": 99.0620653822705, \"prior_nav_per_share\": 101.09657337095975, \"nav_move_bps\": -201.24401063762122}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Max prior NAV per share is ~102.5 (true HWM). Now look at fee_accruals on 2026-04-15."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0020",
+          "name": "get_fee_accruals",
+          "input": {
+            "fund_id": "COBAL",
+            "share_class": "I",
+            "start_date": "2026-04-14",
+            "end_date": "2026-04-15"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0020",
+          "content": "{\"type\": \"list\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"items\": [{\"as_of_date\": \"2026-04-14\", \"fund_id\": \"COBAL\", \"class_code\": \"I\", \"mgmt_fee_daily\": 4024.233614811451, \"perf_fee_delta\": 49193.446759693295, \"perf_fee_balance\": 264808.62647750403, \"hwm_nav_per_share\": 100.0}, {\"as_of_date\": \"2026-04-15\", \"fund_id\": \"COBAL\", \"class_code\": \"I\", \"mgmt_fee_daily\": 4022.5659456313874, \"perf_fee_delta\": 2197688.8085715403, \"perf_fee_balance\": 2197688.8085715403, \"hwm_nav_per_share\": 90.0}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Stored hwm_nav_per_share is ~90 (well below 102.5). Compute what the perf fee should be."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0030",
+          "name": "compute_perf_fee",
+          "input": {
+            "nav_per_share": 102.79,
+            "hwm_nav_per_share": 102.5,
+            "hurdle_bps": 0,
+            "perf_fee_bps": 2000,
+            "period_days": 365
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0030",
+          "content": "{\"type\": \"float\", \"value\": 0.05800000000000125}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Now compute it with the (wrong) stale HWM."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0040",
+          "name": "compute_perf_fee",
+          "input": {
+            "nav_per_share": 102.79,
+            "hwm_nav_per_share": 90.0,
+            "hurdle_bps": 0,
+            "perf_fee_bps": 2000,
+            "period_days": 365
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0040",
+          "content": "{\"type\": \"float\", \"value\": 2.5580000000000016}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Stale HWM in the perf-fee accrual. Reconciles to the unexplained portion of the day's NAV move.\n\n<verdicts>\n[\n  {\n    \"defect_type\": \"stale_hwm_perf_fee\",\n    \"severity\": \"HIGH\",\n    \"confidence\": 0.92,\n    \"evidence\": [\n      {\n        \"description\": \"Class I has perf_fee_bps=2000 with HWM=true. Initial NAV/share was 100.0.\",\n        \"source_table\": \"share_classes\",\n        \"source_key\": {\n          \"fund_id\": \"COBAL\",\n          \"class_code\": \"I\"\n        },\n        \"source_fields\": [\n          \"perf_fee_bps\",\n          \"has_hwm\"\n        ],\n        \"observed_value\": {\n          \"perf_fee_bps\": 2000,\n          \"has_hwm\": true\n        },\n        \"expected_value\": null\n      },\n      {\n        \"description\": \"Maximum prior NAV/share over the full window is 102.50. This is the true HWM under daily MTM.\",\n        \"source_table\": \"nav\",\n        \"source_key\": {\n          \"fund_id\": \"COBAL\",\n          \"class_code\": \"I\"\n        },\n        \"source_fields\": [\n          \"nav_per_share\"\n        ],\n        \"observed_value\": 102.5,\n        \"expected_value\": null\n      },\n      {\n        \"description\": \"On 2026-04-15 the stored hwm_nav_per_share is 90.00 -- materially below the true HWM. Perf fee is being accrued where none should be.\",\n        \"source_table\": \"fee_accruals\",\n        \"source_key\": {\n          \"fund_id\": \"COBAL\",\n          \"class_code\": \"I\",\n          \"as_of_date\": \"2026-04-15\"\n        },\n        \"source_fields\": [\n          \"hwm_nav_per_share\",\n          \"perf_fee_balance\"\n        ],\n        \"observed_value\": {\n          \"hwm_nav_per_share\": 90.0,\n          \"perf_fee_balance\": 25580.0\n        },\n        \"expected_value\": {\n          \"hwm_nav_per_share\": 102.5,\n          \"perf_fee_balance\": 580.0\n        }\n      }\n    ],\n    \"recommended_action\": \"BLOCK_NAV\",\n    \"reasoning\": \"COBAL Class I shows a -201 bps NAV move on 2026-04-15. Perf-fee accrual is using a stale HWM (90.00) instead of the all-time-high prior NAV/share (102.50). This causes the fee engine to charge 20% of (102.79 - 90.00) per share rather than 20% of (102.79 - 102.50). The over-accrual matches the unexplained portion of the day's move. Recommend BLOCK_NAV until the HWM reference is restated and the accrual recomputed.\",\n    \"bps_impact\": -201.2\n  }\n]\n</verdicts>"
+        }
+      ]
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5820,
+    "output_tokens": 1240,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 13910
+  },
+  "total_latency_ms": 16496.0,
+  "iterations": 5,
+  "converged": true,
+  "halted_reason": null,
+  "started_at": "2026-05-02T14:11:36",
+  "finished_at": "2026-05-02T14:11:52.496000"
+}

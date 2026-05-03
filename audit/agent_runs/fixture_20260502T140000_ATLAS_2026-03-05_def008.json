@@ -1,0 +1,340 @@
+{
+  "run_id": "fixture_20260502T140000_ATLAS_2026-03-05_def008",
+  "fund_id": "ATLAS",
+  "as_of_date": "2026-03-05",
+  "share_class": "A",
+  "model_version": "claude-opus-4-7",
+  "prompt_version": "2b800702d652",
+  "verdicts": [
+    {
+      "defect_type": "subscription_pre_cutoff",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "evidence": [
+        {
+          "description": "Capstock event CS_DEFECT_8: SUB of 50,000,000 USD; order_received_ts=2026-03-05T13:30, cutoff_ts=2026-03-05T12:00, booked_for_date=2026-03-05.",
+          "source_table": "capstock",
+          "source_key": {
+            "capstock_id": "CS_DEFECT_8"
+          },
+          "source_fields": [
+            "order_received_ts",
+            "cutoff_ts",
+            "booked_for_date"
+          ],
+          "observed_value": {
+            "order_received": "13:30",
+            "cutoff": "12:00",
+            "booked": "2026-03-05"
+          },
+          "expected_value": {
+            "booked_for_date": "2026-03-06"
+          }
+        },
+        {
+          "description": "Class A NAV moved +52.6 bps; Class I (no capstock today) moved +22.3 bps. Same portfolio -- divergence ~30 bps consistent with intraday-gain dilution from a too-cheap subscription.",
+          "source_table": "nav",
+          "source_key": {
+            "fund_id": "ATLAS",
+            "as_of_date": "2026-03-05"
+          },
+          "source_fields": [
+            "nav_move_bps"
+          ],
+          "observed_value": {
+            "A": 52.6,
+            "I": 22.3
+          },
+          "expected_value": null
+        }
+      ],
+      "recommended_action": "URGENT_REVIEW",
+      "reasoning": "A 50M USD subscription into ATLAS Class A on 2026-03-05 was received at 13:30, after the 12:00 cutoff, but booked at today's NAV. With an intraday market gain, existing Class A holders were diluted by approximately 30 bps -- consistent with the unexplained delta between Class A and Class I NAV moves on the same day (same portfolio). Recommend URGENT_REVIEW: the dealing-cutoff rule is a UCITS investor-protection requirement and the policy override atlas_capstock_strict applies.",
+      "bps_impact": 52.6
+    }
+  ],
+  "policy_actions": [
+    {
+      "verdict_defect_type": "subscription_pre_cutoff",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "action": "URGENT_REVIEW",
+      "escalate_to": "team_lead",
+      "notification_channel": "slack:#oversight-urgent",
+      "rule_matched": "atlas_capstock_strict"
+    }
+  ],
+  "tool_call_log": [
+    {
+      "iteration": 0,
+      "tool_name": "get_funds",
+      "arguments": {
+        "fund_id": "ATLAS"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 1,
+        "element_type": "Fund"
+      },
+      "latency_ms": 1.6489,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0000"
+    },
+    {
+      "iteration": 0,
+      "tool_name": "get_share_classes",
+      "arguments": {
+        "fund_id": "ATLAS"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 2,
+        "element_type": "ShareClass"
+      },
+      "latency_ms": 1.3593,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0001"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_nav_history",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "A",
+        "start_date": "2026-03-02",
+        "end_date": "2026-03-05"
+      },
+      "result_summary": {
+        "type": "DataFrame",
+        "rows": 4,
+        "cols": 8
+      },
+      "latency_ms": 2.8458,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0010"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_nav_history",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "I",
+        "start_date": "2026-03-02",
+        "end_date": "2026-03-05"
+      },
+      "result_summary": {
+        "type": "DataFrame",
+        "rows": 4,
+        "cols": 8
+      },
+      "latency_ms": 2.7427,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0011"
+    },
+    {
+      "iteration": 2,
+      "tool_name": "get_capstock",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "A",
+        "start_date": "2026-03-05",
+        "end_date": "2026-03-05"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 2,
+        "element_type": "CapstockEvent"
+      },
+      "latency_ms": 2.9102,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0020"
+    },
+    {
+      "iteration": 3,
+      "tool_name": "get_fund_calendar",
+      "arguments": {
+        "fund_id": "ATLAS",
+        "share_class": "A"
+      },
+      "result_summary": {
+        "type": "FundCalendar"
+      },
+      "latency_ms": 0.9337,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0030"
+    }
+  ],
+  "message_history": [
+    {
+      "role": "user",
+      "content": "Evaluate the pre-close NAV pack for fund ATLAS, share class A on 2026-03-05. Work through the defect checklist. Use tools to gather evidence. Reconcile the day's NAV move in basis points against the drivers you identify. Produce one or more structured verdicts inside <verdicts>...</verdicts> at the end of your final response."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Orient and check both share classes for divergence."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0000",
+          "name": "get_funds",
+          "input": {
+            "fund_id": "ATLAS"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0001",
+          "name": "get_share_classes",
+          "input": {
+            "fund_id": "ATLAS"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0000",
+          "content": "{\"type\": \"list\", \"rows\": 1, \"rows_returned\": 1, \"truncated\": false, \"items\": [{\"fund_id\": \"ATLAS\", \"name\": \"Atlas Global Equity Fund\", \"base_ccy\": \"USD\", \"strategy\": \"global_equity\", \"tolerance_bps\": 80, \"benchmark\": \"MSCI World\", \"inception_date\": \"2026-01-05\"}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0001",
+          "content": "{\"type\": \"list\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"items\": [{\"fund_id\": \"ATLAS\", \"class_code\": \"A\", \"class_name\": \"Class A (Retail)\", \"mgmt_fee_bps\": 150, \"perf_fee_bps\": 0, \"has_hwm\": false, \"initial_nav_per_share\": 100.0, \"initial_shares\": 1000000.0}, {\"fund_id\": \"ATLAS\", \"class_code\": \"I\", \"class_name\": \"Class I (Institutional)\", \"mgmt_fee_bps\": 60, \"perf_fee_bps\": 0, \"has_hwm\": false, \"initial_nav_per_share\": 1000.0, \"initial_shares\": 200000.0}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0010",
+          "name": "get_nav_history",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "A",
+            "start_date": "2026-03-02",
+            "end_date": "2026-03-05"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0011",
+          "name": "get_nav_history",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "I",
+            "start_date": "2026-03-02",
+            "end_date": "2026-03-05"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0010",
+          "content": "{\"type\": \"DataFrame\", \"rows\": 4, \"rows_returned\": 4, \"truncated\": false, \"columns\": [\"as_of_date\", \"gav_base\", \"fees_accrued\", \"nav_base\", \"shares_outstanding\", \"nav_per_share\", \"prior_nav_per_share\", \"nav_move_bps\"], \"records\": [{\"as_of_date\": \"2026-03-02\", \"gav_base\": 96161010.52982405, \"fees_accrued\": 3951.8223505407145, \"nav_base\": 95989926.4374735, \"shares_outstanding\": 960143.339186738, \"nav_per_share\": 99.97457933601771, \"prior_nav_per_share\": 99.86138069735755, \"nav_move_bps\": 11.335577164031108}, {\"as_of_date\": \"2026-03-03\", \"gav_base\": 96293677.73512663, \"fees_accrued\": 3957.274427470957, \"nav_base\": 96289720.46069916, \"shares_outstanding\": 960143.339186738, \"nav_per_share\": 100.28681815598347, \"prior_nav_per_share\": 99.97457933601771, \"nav_move_bps\": 31.23182133293323}, {\"as_of_date\": \"2026-03-04\", \"gav_base\": 96244026.68900448, \"fees_accrued\": 3955.233973520732, \"nav_base\": 96240071.45503096, \"shares_outstanding\": 960143.339186738, \"nav_per_share\": 100.23510816265035, \"prior_nav_per_share\": 100.28681815598347, \"nav_move_bps\": -5.15621038576497}, {\"as_of_date\": \"2026-03-05\", \"gav_base\": 96463834.35339785, \"fees_accrued\": 3964.267165208131, \"nav_base\": 147009992.02667123, \"shares_outstanding\": 1458970.5556832333, \"nav_per_share\": 100.76282311113998, \"prior_nav_per_share\": 100.23510816265035, \"nav_move_bps\": 52.64771577173421}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0011",
+          "content": "{\"type\": \"DataFrame\", \"rows\": 4, \"rows_returned\": 4, \"truncated\": false, \"columns\": [\"as_of_date\", \"gav_base\", \"fees_accrued\", \"nav_base\", \"shares_outstanding\", \"nav_per_share\", \"prior_nav_per_share\", \"nav_move_bps\"], \"records\": [{\"as_of_date\": \"2026-03-02\", \"gav_base\": 197700867.93188608, \"fees_accrued\": 3249.8772810721, \"nav_base\": 197819955.624605, \"shares_outstanding\": 197670.31219316338, \"nav_per_share\": 1000.7570354383586, \"prior_nav_per_share\": 999.5992553825921, \"nav_move_bps\": 11.582442159017159}, {\"as_of_date\": \"2026-03-03\", \"gav_base\": 198445938.68816948, \"fees_accrued\": 3262.125019531553, \"nav_base\": 198442676.56314996, \"shares_outstanding\": 197670.31219316338, \"nav_per_share\": 1003.9073362176503, \"prior_nav_per_share\": 1000.7570354383586, \"nav_move_bps\": 31.479176940403253}, {\"as_of_date\": \"2026-03-04\", \"gav_base\": 198348506.65265512, \"fees_accrued\": 3260.5233970299473, \"nav_base\": 198345246.1292581, \"shares_outstanding\": 197670.31219316338, \"nav_per_share\": 1003.4144426070171, \"prior_nav_per_share\": 1003.9073362176503, \"nav_move_bps\": -4.909752054309546}, {\"as_of_date\": \"2026-03-05\", \"gav_base\": 198806408.5793703, \"fees_accrued\": 3268.0505519896483, \"nav_base\": 198803140.5288183, \"shares_outstanding\": 197670.31219316338, \"nav_per_share\": 1005.7308976906352, \"prior_nav_per_share\": 1003.4144426070171, \"nav_move_bps\": 23.085725949882896}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Class A and Class I diverge by ~30 bps despite sharing the same portfolio. Check capstock."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0020",
+          "name": "get_capstock",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "A",
+            "start_date": "2026-03-05",
+            "end_date": "2026-03-05"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0020",
+          "content": "{\"type\": \"list\", \"rows\": 2, \"rows_returned\": 2, \"truncated\": false, \"items\": [{\"capstock_id\": \"CS0000016\", \"fund_id\": \"ATLAS\", \"class_code\": \"A\", \"as_of_date\": \"2026-03-05\", \"order_received_ts\": \"2026-03-05T09:43:00\", \"cutoff_ts\": \"2026-03-05T12:00:00\", \"booked_for_date\": \"2026-03-05\", \"flow_type\": \"SUB\", \"gross_amount_base\": 403892.05, \"shares_delta\": 4020.2652275116984}, {\"capstock_id\": \"CS_DEFECT_8\", \"fund_id\": \"ATLAS\", \"class_code\": \"A\", \"as_of_date\": \"2026-03-05\", \"order_received_ts\": \"2026-03-05T13:30:00\", \"cutoff_ts\": \"2026-03-05T12:00:00\", \"booked_for_date\": \"2026-03-05\", \"flow_type\": \"SUB\", \"gross_amount_base\": 50000000.0, \"shares_delta\": 498827.21649649524}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "CS_DEFECT_8 has order_received_ts 13:30 vs cutoff 12:00 -- post-cutoff but booked for today."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0030",
+          "name": "get_fund_calendar",
+          "input": {
+            "fund_id": "ATLAS",
+            "share_class": "A"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0030",
+          "content": "{\"type\": \"FundCalendar\", \"value\": {\"fund_id\": \"ATLAS\", \"share_class\": \"A\", \"cutoff_local_time\": \"12:00:00\", \"dealing_days\": \"BUSINESS_DAYS\"}}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Subscription stamped pre-cutoff but actually post-cutoff. Investor-protection issue.\n\n<verdicts>\n[\n  {\n    \"defect_type\": \"subscription_pre_cutoff\",\n    \"severity\": \"MEDIUM\",\n    \"confidence\": 0.9,\n    \"evidence\": [\n      {\n        \"description\": \"Capstock event CS_DEFECT_8: SUB of 50,000,000 USD; order_received_ts=2026-03-05T13:30, cutoff_ts=2026-03-05T12:00, booked_for_date=2026-03-05.\",\n        \"source_table\": \"capstock\",\n        \"source_key\": {\n          \"capstock_id\": \"CS_DEFECT_8\"\n        },\n        \"source_fields\": [\n          \"order_received_ts\",\n          \"cutoff_ts\",\n          \"booked_for_date\"\n        ],\n        \"observed_value\": {\n          \"order_received\": \"13:30\",\n          \"cutoff\": \"12:00\",\n          \"booked\": \"2026-03-05\"\n        },\n        \"expected_value\": {\n          \"booked_for_date\": \"2026-03-06\"\n        }\n      },\n      {\n        \"description\": \"Class A NAV moved +52.6 bps; Class I (no capstock today) moved +22.3 bps. Same portfolio -- divergence ~30 bps consistent with intraday-gain dilution from a too-cheap subscription.\",\n        \"source_table\": \"nav\",\n        \"source_key\": {\n          \"fund_id\": \"ATLAS\",\n          \"as_of_date\": \"2026-03-05\"\n        },\n        \"source_fields\": [\n          \"nav_move_bps\"\n        ],\n        \"observed_value\": {\n          \"A\": 52.6,\n          \"I\": 22.3\n        },\n        \"expected_value\": null\n      }\n    ],\n    \"recommended_action\": \"URGENT_REVIEW\",\n    \"reasoning\": \"A 50M USD subscription into ATLAS Class A on 2026-03-05 was received at 13:30, after the 12:00 cutoff, but booked at today's NAV. With an intraday market gain, existing Class A holders were diluted by approximately 30 bps -- consistent with the unexplained delta between Class A and Class I NAV moves on the same day (same portfolio). Recommend URGENT_REVIEW: the dealing-cutoff rule is a UCITS investor-protection requirement and the policy override atlas_capstock_strict applies.\",\n    \"bps_impact\": 52.6\n  }\n]\n</verdicts>"
+        }
+      ]
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1211,
+    "output_tokens": 1160,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 11605
+  },
+  "total_latency_ms": 15838.0,
+  "iterations": 4,
+  "converged": true,
+  "halted_reason": null,
+  "started_at": "2026-05-02T14:00:38",
+  "finished_at": "2026-05-02T14:00:53.838000"
+}

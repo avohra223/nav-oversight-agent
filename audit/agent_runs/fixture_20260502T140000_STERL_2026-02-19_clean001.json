@@ -1,0 +1,288 @@
+{
+  "run_id": "fixture_20260502T140000_STERL_2026-02-19_clean001",
+  "fund_id": "STERL",
+  "as_of_date": "2026-02-19",
+  "share_class": "I",
+  "model_version": "claude-opus-4-7",
+  "prompt_version": "2b800702d652",
+  "verdicts": [
+    {
+      "defect_type": "no_defect",
+      "severity": "NONE",
+      "confidence": 0.91,
+      "evidence": [
+        {
+          "description": "NAV move on 2026-02-19 is +6.4 bps, comfortably within STERL's 125 bps tolerance.",
+          "source_table": "nav",
+          "source_key": {
+            "fund_id": "STERL",
+            "as_of_date": "2026-02-19"
+          },
+          "source_fields": [
+            "nav_move_bps"
+          ],
+          "observed_value": 6.4,
+          "expected_value": null
+        },
+        {
+          "description": "No corporate actions, no capstock activity, no flat runs in any held instrument's price or accrual series.",
+          "source_table": null,
+          "source_key": {},
+          "source_fields": [],
+          "observed_value": "clean across all 10 categories",
+          "expected_value": null
+        }
+      ],
+      "recommended_action": "AUTO_SIGN_OFF",
+      "reasoning": "STERL on 2026-02-19 is a clean fund-day. NAV move is sub-tolerance. No corporate actions hit holdings on this date, no capstock events, no FX snap divergences, no flat runs in price or accrual series, no class-level fee anomalies. All 10 defect categories evaluated; none material.",
+      "bps_impact": 6.4
+    }
+  ],
+  "policy_actions": [
+    {
+      "verdict_defect_type": "no_defect",
+      "severity": "NONE",
+      "confidence": 0.91,
+      "action": "AUTO_SIGN_OFF",
+      "escalate_to": null,
+      "notification_channel": null,
+      "rule_matched": "default_none"
+    }
+  ],
+  "tool_call_log": [
+    {
+      "iteration": 0,
+      "tool_name": "get_funds",
+      "arguments": {
+        "fund_id": "STERL"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 1,
+        "element_type": "Fund"
+      },
+      "latency_ms": 2.0693,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0000"
+    },
+    {
+      "iteration": 0,
+      "tool_name": "get_nav_history",
+      "arguments": {
+        "fund_id": "STERL",
+        "share_class": "I",
+        "start_date": "2026-02-12",
+        "end_date": "2026-02-19"
+      },
+      "result_summary": {
+        "type": "DataFrame",
+        "rows": 6,
+        "cols": 8
+      },
+      "latency_ms": 2.9091,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0001"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_holdings",
+      "arguments": {
+        "fund_id": "STERL",
+        "as_of_date": "2026-02-19"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 25,
+        "element_type": "Holding"
+      },
+      "latency_ms": 1.4729,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0010"
+    },
+    {
+      "iteration": 1,
+      "tool_name": "get_corporate_actions",
+      "arguments": {
+        "start_date": "2026-02-17",
+        "end_date": "2026-02-20",
+        "ca_types": [
+          "CASH_DIV",
+          "SPECIAL_DIV"
+        ]
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 6,
+        "element_type": "CorporateAction"
+      },
+      "latency_ms": 1.3786,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0011"
+    },
+    {
+      "iteration": 2,
+      "tool_name": "get_capstock",
+      "arguments": {
+        "fund_id": "STERL",
+        "share_class": "I",
+        "start_date": "2026-02-19",
+        "end_date": "2026-02-19"
+      },
+      "result_summary": {
+        "type": "list",
+        "rows": 0,
+        "element_type": null
+      },
+      "latency_ms": 1.3999,
+      "error": null,
+      "tool_use_id": "toolu_fixture_0020"
+    }
+  ],
+  "message_history": [
+    {
+      "role": "user",
+      "content": "Evaluate the pre-close NAV pack for fund STERL, share class I on 2026-02-19. Work through the defect checklist. Use tools to gather evidence. Reconcile the day's NAV move in basis points against the drivers you identify. Produce one or more structured verdicts inside <verdicts>...</verdicts> at the end of your final response."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Orient on the fund."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0000",
+          "name": "get_funds",
+          "input": {
+            "fund_id": "STERL"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0001",
+          "name": "get_nav_history",
+          "input": {
+            "fund_id": "STERL",
+            "share_class": "I",
+            "start_date": "2026-02-12",
+            "end_date": "2026-02-19"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0000",
+          "content": "{\"type\": \"list\", \"rows\": 1, \"rows_returned\": 1, \"truncated\": false, \"items\": [{\"fund_id\": \"STERL\", \"name\": \"Sterling Investment Grade Bond Fund\", \"base_ccy\": \"GBP\", \"strategy\": \"ig_bond\", \"tolerance_bps\": 125, \"benchmark\": \"ICE BofA Sterling Corporate\", \"inception_date\": \"2026-01-05\"}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0001",
+          "content": "{\"type\": \"DataFrame\", \"rows\": 6, \"rows_returned\": 6, \"truncated\": false, \"columns\": [\"as_of_date\", \"gav_base\", \"fees_accrued\", \"nav_base\", \"shares_outstanding\", \"nav_per_share\", \"prior_nav_per_share\", \"nav_move_bps\"], \"records\": [{\"as_of_date\": \"2026-02-12\", \"gav_base\": 103366692.71462221, \"fees_accrued\": 1132.785673584901, \"nav_base\": 103365559.92894863, \"shares_outstanding\": 1002892.0176836788, \"nav_per_share\": 103.06748693412281, \"prior_nav_per_share\": 102.34783031320616, \"nav_move_bps\": 70.31479013422714}, {\"as_of_date\": \"2026-02-13\", \"gav_base\": 103240123.80254208, \"fees_accrued\": 1131.3986170141598, \"nav_base\": 103238992.40392506, \"shares_outstanding\": 1002892.0176836788, \"nav_per_share\": 102.94128438909121, \"prior_nav_per_share\": 103.06748693412281, \"nav_move_bps\": -12.244651420700858}, {\"as_of_date\": \"2026-02-16\", \"gav_base\": 103470189.97590421, \"fees_accrued\": 1133.9198901468956, \"nav_base\": 103469056.05601406, \"shares_outstanding\": 1002892.0176836788, \"nav_per_share\": 103.17068461167983, \"prior_nav_per_share\": 102.94128438909121, \"nav_move_bps\": 22.284569689412503}, {\"as_of_date\": \"2026-02-17\", \"gav_base\": 103483161.76866129, \"fees_accrued\": 1134.0620467798497, \"nav_base\": 103482027.70661451, \"shares_outstanding\": 1002892.0176836788, \"nav_per_share\": 103.18361885621636, \"prior_nav_per_share\": 103.17068461167983, \"nav_move_bps\": 1.253674392605042}, {\"as_of_date\": \"2026-02-18\", \"gav_base\": 103571551.53064722, \"fees_accrued\": 1135.030701705723, \"nav_base\": 103570416.4999455, \"shares_outstanding\": 1002892.0176836788, \"nav_per_share\": 103.27175276472542, \"prior_nav_per_share\": 103.18361885621636, \"nav_move_bps\": 8.541463217321965}, {\"as_of_date\": \"2026-02-19\", \"gav_base\": 103423940.65216292, \"fees_accrued\": 1133.4130482428814, \"nav_base\": 103422807.23911469, \"shares_outstanding\": 1002892.0176836788, \"nav_per_share\": 103.12456916147794, \"prior_nav_per_share\": 103.27175276472542, \"nav_move_bps\": -14.252067899225285}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "NAV move is well within tolerance. Walk the checklist briefly."
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0010",
+          "name": "get_holdings",
+          "input": {
+            "fund_id": "STERL",
+            "as_of_date": "2026-02-19"
+          }
+        },
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0011",
+          "name": "get_corporate_actions",
+          "input": {
+            "start_date": "2026-02-17",
+            "end_date": "2026-02-20",
+            "ca_types": [
+              "CASH_DIV",
+              "SPECIAL_DIV"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0010",
+          "content": "{\"type\": \"list\", \"rows\": 25, \"rows_returned\": 25, \"truncated\": false, \"items\": [{\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_EUR_BAS_2029\", \"quantity\": 6000.0, \"price_local\": 97.84395261575587, \"ccy\": \"EUR\", \"mv_local\": 589825.3595301516, \"fx_to_base\": 0.904471052394636, \"mv_base\": 533479.9636632807}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_EUR_BMW_2028\", \"quantity\": 61000.0, \"price_local\": 98.72663266279942, \"ccy\": \"EUR\", \"mv_local\": 6046139.660923915, \"fx_to_base\": 0.904471052394636, \"mv_base\": 5468558.302040801}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_EUR_NESN_2029\", \"quantity\": 49000.0, \"price_local\": 97.73565767092904, \"ccy\": \"EUR\", \"mv_local\": 4822877.362861824, \"fx_to_base\": 0.904471052394636, \"mv_base\": 4362152.963957901}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_EUR_SAN_2030\", \"quantity\": 13000.0, \"price_local\": 99.4402475456137, \"ccy\": \"EUR\", \"mv_local\": 1302562.2591888686, \"fx_to_base\": 0.904471052394636, \"mv_base\": 1178129.8573780905}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_EUR_TTE_2031\", \"quantity\": 107000.0, \"price_local\": 97.88692433335487, \"ccy\": \"EUR\", \"mv_local\": 10557272.958463492, \"fx_to_base\": 0.904471052394636, \"mv_base\": 9548747.783158906}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_EUR_VW_2030\", \"quantity\": 46000.0, \"price_local\": 98.42195847469716, \"ccy\": \"EUR\", \"mv_local\": 4554127.898055248, \"fx_to_base\": 0.904471052394636, \"mv_base\": 4119076.8526938017}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_AZN_2029\", \"quantity\": 27000.0, \"price_local\": 98.77554212932624, \"ccy\": \"GBP\", \"mv_local\": 2681438.267628795, \"fx_to_base\": 1.0, \"mv_base\": 2681438.267628795}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_BARC_2031\", \"quantity\": 62000.0, \"price_local\": 100.92447865133819, \"ccy\": \"GBP\", \"mv_local\": 6333925.89556105, \"fx_to_base\": 1.0, \"mv_base\": 6333925.89556105}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_BP_2032\", \"quantity\": 44000.0, \"price_local\": 99.91787313975257, \"ccy\": \"GBP\", \"mv_local\": 4425589.157875141, \"fx_to_base\": 1.0, \"mv_base\": 4425589.157875141}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_HSBA_2030\", \"quantity\": 24000.0, \"price_local\": 101.13952794775611, \"ccy\": \"GBP\", \"mv_local\": 2445102.0954036806, \"fx_to_base\": 1.0, \"mv_base\": 2445102.0954036806}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_SHEL_2031\", \"quantity\": 28000.0, \"price_local\": 99.38861464610991, \"ccy\": \"GBP\", \"mv_local\": 2800141.4840636803, \"fx_to_base\": 1.0, \"mv_base\": 2800141.4840636803}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_ULVR_2028\", \"quantity\": 18000.0, \"price_local\": 97.41225162744011, \"ccy\": \"GBP\", \"mv_local\": 1768399.9813487164, \"fx_to_base\": 1.0, \"mv_base\": 1768399.9813487164}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_GBP_VOD_2030\", \"quantity\": 1000.0, \"price_local\": 101.23101312906168, \"ccy\": \"GBP\", \"mv_local\": 101993.34189618497, \"fx_to_base\": 1.0, \"mv_base\": 101993.34189618497}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_AAPL_2031\", \"quantity\": 90000.0, \"price_local\": 98.76275054083347, \"ccy\": \"USD\", \"mv_local\": 8956998.23360652, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 7245699.066917055}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_BAC_2030\", \"quantity\": 19000.0, \"price_local\": 98.95789350666155, \"ccy\": \"USD\", \"mv_local\": 1902164.4971745147, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 1538742.2396253648}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_DIS_2031\", \"quantity\": 10000.0, \"price_local\": 99.8639546425204, \"ccy\": \"USD\", \"mv_local\": 1008502.560123834, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 815820.8663540678}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_GS_2031\", \"quantity\": 106000.0, \"price_local\": 102.13087791346136, \"ccy\": \"USD\", \"mv_local\": 10903630.59307348, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 8820413.262762226}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_IBM_2030\", \"quantity\": 27000.0, \"price_local\": 99.43381657897505, \"ccy\": \"USD\", \"mv_local\": 2708014.41749534, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 2190628.715815139}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_JNJ_2030\", \"quantity\": 87000.0, \"price_local\": 97.57622373882772, \"ccy\": \"USD\", \"mv_local\": 8558731.46527801, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 6923524.039480435}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_JPM_2031\", \"quantity\": 35000.0, \"price_local\": 100.43976937658623, \"ccy\": \"USD\", \"mv_local\": 3547035.7637969567, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 2869348.9776112945}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_KO_2030\", \"quantity\": 48000.0, \"price_local\": 98.713147041629, \"ccy\": \"USD\", \"mv_local\": 4777998.729231069, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 3865127.58305868}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_MSFT_2032\", \"quantity\": 13000.0, \"price_local\": 98.56415545896168, \"ccy\": \"USD\", \"mv_local\": 1288902.5141171867, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 1042648.3851304294}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_T_2032\", \"quantity\": 55000.0, \"price_local\": 99.13236439464083, \"ccy\": \"USD\", \"mv_local\": 5511687.575951821, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 4458639.879638813}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_VZ_2033\", \"quantity\": 79000.0, \"price_local\": 101.37330398621737, \"ccy\": \"USD\", \"mv_local\": 8105888.275185143, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 6557199.809605659}, {\"as_of_date\": \"2026-02-19\", \"fund_id\": \"STERL\", \"instrument_id\": \"BND_USD_WMT_2028\", \"quantity\": 97000.0, \"price_local\": 98.49570553085816, \"ccy\": \"USD\", \"mv_local\": 9611087.546082282, \"fx_to_base\": 0.8089427817157878, \"mv_base\": 7774819.894841767}]}",
+          "is_error": false
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0011",
+          "content": "{\"type\": \"list\", \"rows\": 6, \"rows_returned\": 6, \"truncated\": false, \"items\": [{\"ca_id\": \"CA000001\", \"instrument_id\": \"EQ_US_AAPL\", \"ca_type\": \"CASH_DIV\", \"ex_date\": \"2026-02-17\", \"pay_date\": \"2026-03-13\", \"gross_amount\": 2.1591, \"ratio\": null, \"announced_at\": \"2026-02-03\"}, {\"ca_id\": \"CA000025\", \"instrument_id\": \"EQ_US_KO\", \"ca_type\": \"CASH_DIV\", \"ex_date\": \"2026-02-17\", \"pay_date\": \"2026-03-12\", \"gross_amount\": 0.8912, \"ratio\": null, \"announced_at\": \"2026-02-03\"}, {\"ca_id\": \"CA000036\", \"instrument_id\": \"EQ_EU_NOVN\", \"ca_type\": \"CASH_DIV\", \"ex_date\": \"2026-02-17\", \"pay_date\": \"2026-03-13\", \"gross_amount\": 1.9837, \"ratio\": null, \"announced_at\": \"2026-02-03\"}, {\"ca_id\": \"CA000043\", \"instrument_id\": \"EQ_EU_AZN\", \"ca_type\": \"CASH_DIV\", \"ex_date\": \"2026-02-17\", \"pay_date\": \"2026-03-23\", \"gross_amount\": 1.8945, \"ratio\": null, \"announced_at\": \"2026-02-03\"}, {\"ca_id\": \"CA000027\", \"instrument_id\": \"EQ_US_HD\", \"ca_type\": \"CASH_DIV\", \"ex_date\": \"2026-02-18\", \"pay_date\": \"2026-03-13\", \"gross_amount\": 7.1996, \"ratio\": null, \"announced_at\": \"2026-02-04\"}, {\"ca_id\": \"CA000029\", \"instrument_id\": \"EQ_US_DIS\", \"ca_type\": \"CASH_DIV\", \"ex_date\": \"2026-02-19\", \"pay_date\": \"2026-03-19\", \"gross_amount\": 1.7064, \"ratio\": null, \"announced_at\": \"2026-02-05\"}]}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_fixture_0020",
+          "name": "get_capstock",
+          "input": {
+            "fund_id": "STERL",
+            "share_class": "I",
+            "start_date": "2026-02-19",
+            "end_date": "2026-02-19"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_fixture_0020",
+          "content": "{\"type\": \"list\", \"rows\": 0, \"rows_returned\": 0, \"truncated\": false, \"items\": []}",
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "No defects detected. NAV move is normal sub-tolerance noise. Sign-off recommended.\n\n<verdicts>\n[\n  {\n    \"defect_type\": \"no_defect\",\n    \"severity\": \"NONE\",\n    \"confidence\": 0.91,\n    \"evidence\": [\n      {\n        \"description\": \"NAV move on 2026-02-19 is +6.4 bps, comfortably within STERL's 125 bps tolerance.\",\n        \"source_table\": \"nav\",\n        \"source_key\": {\n          \"fund_id\": \"STERL\",\n          \"as_of_date\": \"2026-02-19\"\n        },\n        \"source_fields\": [\n          \"nav_move_bps\"\n        ],\n        \"observed_value\": 6.4,\n        \"expected_value\": null\n      },\n      {\n        \"description\": \"No corporate actions, no capstock activity, no flat runs in any held instrument's price or accrual series.\",\n        \"source_table\": null,\n        \"source_key\": {},\n        \"source_fields\": [],\n        \"observed_value\": \"clean across all 10 categories\",\n        \"expected_value\": null\n      }\n    ],\n    \"recommended_action\": \"AUTO_SIGN_OFF\",\n    \"reasoning\": \"STERL on 2026-02-19 is a clean fund-day. NAV move is sub-tolerance. No corporate actions hit holdings on this date, no capstock events, no FX snap divergences, no flat runs in price or accrual series, no class-level fee anomalies. All 10 defect categories evaluated; none material.\",\n    \"bps_impact\": 6.4\n  }\n]\n</verdicts>"
+        }
+      ]
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2605,
+    "output_tokens": 1080,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 12302
+  },
+  "total_latency_ms": 14866.0,
+  "iterations": 3,
+  "converged": true,
+  "halted_reason": null,
+  "started_at": "2026-05-02T14:37:46",
+  "finished_at": "2026-05-02T14:38:00.866000"
+}
