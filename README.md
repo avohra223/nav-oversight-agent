@@ -53,30 +53,77 @@ DuckDB warehouse  ─►  tool layer  ─►  agent loop  ─►  verdict
 
 - [x] **Phase 1** — DuckDB warehouse + 10 seeded defects + verification report.
 - [x] **Phase 2** — Tool layer (25 tools, 6 modules) + audit logging + 86-test suite.
-- [ ] **Phase 3** — Agent loop with Anthropic SDK. *Next.*
-- [ ] **Phase 4** — Policy layer + Streamlit UI.
-- [ ] **Phase 5** — Eval harness measuring defect detection rate.
+- [x] **Phase 3** — Agent loop with Anthropic SDK + policy layer + replay capability.
+- [x] **Phase 4** — Streamlit UI with fixture-based audit replay (no API spend required).
+- [ ] **Phase 5** — Eval harness measuring defect detection rate. *Next.*
 
-## How to run locally
+## Running the demo
+
+The UI ships with 11 pre-recorded `audit/agent_runs/fixture_*.json` files —
+one per defect plus a clean run. The demo works fully offline; no API
+key is needed to view, navigate, and inspect the agent's reasoning.
 
 ```bash
-git clone <this repo>
+git clone https://github.com/avohra223/nav-oversight-agent.git
 cd nav-oversight-agent
 
-# Python 3.12+ recommended; the project was developed on 3.14.
+# Python 3.12+ recommended (developed on 3.14)
 python -m venv .venv
-. .venv/Scripts/activate           # on Windows; macOS/Linux: source .venv/bin/activate
+. .venv/Scripts/activate           # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-pip install pytest                 # for the test suite
 
-# Build the warehouse from synthetic seed scripts (~40s end-to-end).
+# Rebuild the warehouse (fixtures already in the repo, but the warehouse
+# is gitignored and needs regenerating — deterministic from a fixed seed)
 python scripts/generate_data.py
 
-# Print the scenario index showing all 10 defects.
+# Launch the UI
+streamlit run ui/app.py
+```
+
+Open the local URL Streamlit prints. Walk through the five sidebar pages:
+
+- **Dashboard** — multi-fund overview with severity, action, defect counts.
+- **Defect Detail** — verdict cards, evidence chain, full message history.
+- **Run Explorer** — historical runs with filters and CSV export.
+- **Configuration** — edit `config/policies.yaml` from the form.
+- **Run Live** — the only page that consumes API credits (gated).
+
+### Run Live (consumes API credits)
+
+This is the only path that bills your Anthropic API account. It is gated
+behind both an environment variable check and an explicit
+acknowledgement checkbox; the run button is disabled otherwise.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+streamlit run ui/app.py
+# In the UI: navigate to Run Live, choose a fund/date/model, check the
+# acknowledgement, click Run agent now.
+```
+
+To record a batch of real runs (e.g. for a portfolio demo) and have them
+replace the bundled fixtures:
+
+```bash
+python scripts/record_demo_runs.py                # the 3 hero defects (3, 5, 9)
+python scripts/record_demo_runs.py --all          # all 10 defects
+python scripts/reset_to_fixtures.py --apply       # back to fixture-only
+```
+
+## Other entry points
+
+```bash
+# Print the 10-defect scenario index from the warehouse
 python scripts/report_scenarios.py
 
-# Run the full test suite (warehouse rebuilds automatically if missing).
+# Run the Phase 2 tool test suite (no API needed)
 python -m pytest tests/tools/
+
+# Run the Phase 3 agent test suite (requires API key + budget)
+python -m pytest tests/agent/
+
+# Headless smoke test of every UI page
+python scripts/smoke_test_ui.py
 ```
 
 The warehouse file `data/nav.duckdb` is gitignored — it is always
@@ -118,6 +165,20 @@ nav-oversight-agent/
 │   ├── defects.py               pre-walk + post-walk defect injectors
 │   ├── build.py                 orchestrator
 │   └── generators/              per-table generators (FX, prices, walk-forward, …)
+├── agent/                       Phase 3: agent loop (Anthropic SDK)
+│   ├── core.py                  run_agent + tool-use cycle
+│   ├── dispatcher.py            LLM tool_use -> Phase 2 tools
+│   ├── policies.py              verdict -> action resolution
+│   ├── replay.py                tolerance-based diff
+│   ├── schemas.py               AgentRun / Verdict / EvidenceItem
+│   └── prompts/                 system prompt + defect checklist
+├── ui/                          Phase 4: Streamlit UI (fixture-driven)
+│   ├── app.py                   entrypoint
+│   ├── styling.py               enterprise theme
+│   ├── data_loaders.py          load AgentRun JSONs
+│   ├── components/              verdict_card, evidence_chain, etc.
+│   └── pages/                   dashboard, defect detail, explorer, config, run-live
+├── config/policies.yaml         policy rules with per-fund overrides
 ├── tools/                       Phase 2: tool layer (facts not verdicts)
 │   ├── README.md                tool inventory and design
 │   ├── reference.py             funds, classes, instruments, treaty, calendar
